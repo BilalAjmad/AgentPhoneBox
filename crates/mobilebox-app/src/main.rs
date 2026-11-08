@@ -55,11 +55,11 @@ fn main() {
     let avd_home = std::env::var("ANDROID_AVD_HOME")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|_| {
-            // Portable: check relative to install dir first, then standard location.
-            let candidate = cfg.install_dir.join(".android").join("avd");
+            let candidate = std::path::PathBuf::from("H:\\MobileBox\\.android\\avd");
             if candidate.exists() {
                 candidate
             } else {
+                // standard location
                 #[cfg(target_os = "windows")]
                 {
                     std::env::var("USERPROFILE")
@@ -94,7 +94,7 @@ fn main() {
                 "google_apis_playstore",
                 "--force",
             ]);
-            c.env("JAVA_HOME", cfg.install_dir.join("jdk"));
+            c.env("JAVA_HOME", "H:\\jdk");
             c.env("ANDROID_AVD_HOME", &avd_home);
             let _ = c.output();
         }
@@ -116,13 +116,9 @@ fn main() {
             // Spawn hotkey listener (Ctrl+Alt+F -> fullscreen toggle).
             #[cfg(target_os = "windows")]
             {
-                let hotkey_script = cfg.install_dir.join("MobileBox-Hotkey.ps1");
-                if hotkey_script.exists() {
-                    let mut c = Command::new("powershell");
-                    c.args(["-NoProfile", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File"]);
-                    c.arg(&hotkey_script);
-                    let _ = c.spawn();
-                }
+                let mut c = Command::new("powershell");
+                c.args(["-NoProfile", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File", "H:\\MobileBox\\MobileBox-Hotkey.ps1"]);
+                let _ = c.spawn();
             }
             // Post-boot optimizations (background, delayed).
             #[cfg(target_os = "windows")]
