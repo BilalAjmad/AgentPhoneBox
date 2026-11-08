@@ -119,15 +119,6 @@ Your AI agent now has a real Android phone.
 3. Connect your AI agent via MCP
 4. Tell your agent: "Take a screenshot of the phone" or "Open Chrome and search for..."
 
-## Keyboard Shortcuts
-
-| Keys | Action |
-|------|--------|
-| `Ctrl+Alt+F` | Toggle fullscreen |
-| `Alt+Enter` | Toggle fullscreen (manual) |
-| `Esc` | Back |
-| `Win` / `Home` | Home |
-
 ## Features
 
 - **One-tap launch** — Desktop shortcut opens the phone directly
@@ -155,4 +146,5 @@ MIT License — see [LICENSE](LICENSE)
 ---
 
 **AgentPhoneBox** — A real Android phone on your laptop, controlled by you or your AI.
+
 
