@@ -1,0 +1,12 @@
+[package]
+name = "mobilebox-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "MobileBox"
+path = "src/main.rs"
+
+[dependencies]
+mobilebox-common = { workspace = true }

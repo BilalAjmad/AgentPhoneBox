@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/mobilebox-common",
+    "crates/mobilebox-mcp",
+    "crates/mobilebox-app",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["MobileBox contributors"]
+license = "MIT"
+repository = "https://github.com/BilalAjmad/AgentPhoneBox"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rmcp = { version = "3.8", features = ["server", "transport-io", "macros"] }
+schemars = "1"
+egui = "0.29"
+eframe = "0.29"
+tray-icon = "0.19"
+mobilebox-common = { path = "crates/mobilebox-common" }

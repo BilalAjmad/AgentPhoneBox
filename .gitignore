@@ -1,0 +1,65 @@
+# MobileBox / AgentPhoneBox
+
+# Build artifacts
+target/
+Cargo.lock
+*.pdb
+*.rlib
+*.rmeta
+incremental/
+
+# Android SDK / Emulator (too large for repo)
+.android/
+emulator/
+system-images/
+platform-tools/
+cmdline-tools/
+cmdline-tools.zip
+jdk/
+scoop/
+licenses/
+
+# User data / personal
+.temp/
+*.zip
+location.txt
+*.log
+modem-nv-ram-*
+debug.keystore
+debug.keystore.lock
+adbkey
+adbkey.pub
+knownPackages
+
+# Skins (binary assets)
+skins/**/frame.png
+skins/**/port_back.png
+
+# IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Video build (keep only final outputs)
+video/node_modules/
+video/out/
+video/.taste-skill/
+
+# Screenshots (keep only selected ones in docs/)
+screenshot_apps.png
+screenshot_home.png
+
+# Python scripts (dev only)
+*.py
+render_video*.py
+
+# Keep these:
+# launch_video.mp4
+# launch_video.gif
+# launch_video_reel.mp4
+# ss_*.png (for README)
+
+# Distribution (binaries)
+dist/
+
