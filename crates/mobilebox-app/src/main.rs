@@ -55,22 +55,27 @@ fn main() {
     let avd_home = std::env::var("ANDROID_AVD_HOME")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|_| {
-            let candidate = std::path::PathBuf::from("H:\\MobileBox\\.android\\avd");
-            if candidate.exists() {
-                candidate
+            // Check H: drive first (dev setup), then install dir, then standard C: location.
+            let h_candidate = std::path::PathBuf::from("H:\\MobileBox\\.android\\avd");
+            if h_candidate.exists() {
+                h_candidate
             } else {
-                // standard location
-                #[cfg(target_os = "windows")]
-                {
-                    std::env::var("USERPROFILE")
-                        .map(|u| std::path::PathBuf::from(u).join(".android").join("avd"))
-                        .unwrap_or_else(|_| std::path::PathBuf::from(".android").join("avd"))
-                }
-                #[cfg(not(target_os = "windows"))]
-                {
-                    std::env::var("HOME")
-                        .map(|h| std::path::PathBuf::from(h).join(".android").join("avd"))
-                        .unwrap_or_else(|_| std::path::PathBuf::from(".android").join("avd"))
+                let install_candidate = cfg.install_dir.join(".android").join("avd");
+                if install_candidate.exists() {
+                    install_candidate
+                } else {
+                    #[cfg(target_os = "windows")]
+                    {
+                        std::env::var("USERPROFILE")
+                            .map(|u| std::path::PathBuf::from(u).join(".android").join("avd"))
+                            .unwrap_or_else(|_| std::path::PathBuf::from(".android").join("avd"))
+                    }
+                    #[cfg(not(target_os = "windows"))]
+                    {
+                        std::env::var("HOME")
+                            .map(|h| std::path::PathBuf::from(h).join(".android").join("avd"))
+                            .unwrap_or_else(|_| std::path::PathBuf::from(".android").join("avd"))
+                    }
                 }
             }
         });
@@ -94,7 +99,12 @@ fn main() {
                 "google_apis_playstore",
                 "--force",
             ]);
-            c.env("JAVA_HOME", "H:\\jdk");
+            let java_home = if std::path::Path::new("H:\\jdk").exists() {
+                std::path::PathBuf::from("H:\\jdk")
+            } else {
+                cfg.install_dir.join("jdk")
+            };
+            c.env("JAVA_HOME", java_home);
             c.env("ANDROID_AVD_HOME", &avd_home);
             let _ = c.output();
         }
@@ -116,9 +126,17 @@ fn main() {
             // Spawn hotkey listener (Ctrl+Alt+F -> fullscreen toggle).
             #[cfg(target_os = "windows")]
             {
-                let mut c = Command::new("powershell");
-                c.args(["-NoProfile", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File", "H:\\MobileBox\\MobileBox-Hotkey.ps1"]);
-                let _ = c.spawn();
+                let hotkey_script = if std::path::Path::new("H:\\MobileBox\\MobileBox-Hotkey.ps1").exists() {
+                    std::path::PathBuf::from("H:\\MobileBox\\MobileBox-Hotkey.ps1")
+                } else {
+                    cfg.install_dir.join("MobileBox-Hotkey.ps1")
+                };
+                if hotkey_script.exists() {
+                    let mut c = Command::new("powershell");
+                    c.args(["-NoProfile", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File"]);
+                    c.arg(&hotkey_script);
+                    let _ = c.spawn();
+                }
             }
             // Post-boot optimizations (background, delayed).
             #[cfg(target_os = "windows")]

@@ -266,7 +266,11 @@ impl MobileBoxServer {
     fn restart_emulator(&self) -> Result<String, rmcp::ErrorData> {
         let adb = self.adb.lock().unwrap();
         let install_dir = adb.install_dir().to_path_buf();
-        let avd_home = std::path::PathBuf::from("H:\\.android\\avd");
+        let avd_home = if std::path::Path::new("H:\\.android\\avd").exists() {
+            std::path::PathBuf::from("H:\\.android\\avd")
+        } else {
+            install_dir.join(".android").join("avd")
+        };
         let avd_name = "mobilebox".to_string();
         let _ = adb.run(&["emu", "kill"]);
         drop(adb);
