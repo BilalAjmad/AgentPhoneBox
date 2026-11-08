@@ -8,7 +8,7 @@ A virtual Android 14 phone that runs on your Windows laptop. Your AI agent gets 
 
 ## 🎬 Launch Video
 
-https://github.com/BilalAjmad/AgentPhoneBox/raw/main/launch_video.mp4
+<video src="https://github.com/BilalAjmad/AgentPhoneBox/raw/main/launch_video.mp4" autoplay loop muted playsinline width="100%"></video>
 
 ## What Is This?
 
@@ -56,7 +56,6 @@ AgentPhoneBox/
 | `adb_shell` | Restricted shell access |
 | `restart_emulator` | Restart the phone |
 | `is_booted` / `rotate` | Boot status, rotation |
-| `set_location_country` | GPS spoofing |
 
 ## Installation
 
@@ -137,7 +136,6 @@ Your AI agent now has a real Android phone.
 | Camera | ✅ Works (laptop webcam) |
 | WiFi/Internet | ✅ Works (host NAT) |
 | Hotspot/Tethering | ⚠️ UI only |
-| GPS Spoofing | ✅ Via MCP (`set_location_country`) |
 
 ## License
 
@@ -146,5 +144,7 @@ MIT License — see [LICENSE](LICENSE)
 ---
 
 **AgentPhoneBox** — A real Android phone on your laptop, controlled by you or your AI.
+
+
 
 
