@@ -106,7 +106,18 @@ impl Adb {
                 "adb input text supports ASCII only".into(),
             ));
         }
-        let encoded = text.replace(' ', "%s");
+        // Escape shell-special characters.
+        let mut encoded = String::new();
+        for ch in text.chars() {
+            match ch {
+                ' ' => encoded.push_str("%s"),
+                '\'' | '"' | '\\' | '$' | '`' | '|' | '&' | ';' | '(' | ')' | '<' | '>' => {
+                    encoded.push('\\');
+                    encoded.push(ch);
+                }
+                _ => encoded.push(ch),
+            }
+        }
         self.shell(&format!("input text {}", encoded))?;
         Ok(())
     }
@@ -133,16 +144,28 @@ impl Adb {
                 return Ok(line.trim().to_string());
             }
         }
-        // fallback
-        let out = self.shell("dumpsys window | grep mCurrentFocus")?;
-        Ok(out.trim().to_string())
+        // fallback: use dumpsys window (works on all platforms)
+        let out = self.shell("dumpsys window windows")?;
+        for line in out.lines() {
+            if line.contains("mCurrentFocus") || line.contains("mFocusedApp") {
+                return Ok(line.trim().to_string());
+            }
+        }
+        Ok("unknown".to_string())
     }
 
     pub fn install_apk(&self, path: &Path) -> Result<String, MobileBoxError> {
-        self.run(&["install", "-r", path.to_str().unwrap_or("")])
+        let path_str = path.to_str().ok_or_else(|| MobileBoxError::CommandFailed("invalid path".into()))?;
+        self.run(&["install", "-r", path_str])
     }
 
     pub fn launch_app(&self, pkg: &str) -> Result<(), MobileBoxError> {
+        // Validate package name: only alphanumeric, dots, underscores.
+        if !pkg.chars().all(|c| c.is_alphanumeric() || c == '.' || c == '_') || pkg.is_empty() {
+            return Err(MobileBoxError::CommandFailed(
+                format!("invalid package name: {}", pkg)
+            ));
+        }
         self.shell(&format!(
             "monkey -p {} -c android.intent.category.LAUNCHER 1",
             pkg
@@ -160,9 +183,11 @@ impl Adb {
     }
 
     pub fn open_url(&self, url: &str) -> Result<(), MobileBoxError> {
+        // Escape single quotes in URL for shell safety.
+        let safe_url = url.replace('\'', "'\\''");
         self.shell(&format!(
             "am start -a android.intent.action.VIEW -d '{}'",
-            url
+            safe_url
         ))?;
         Ok(())
     }

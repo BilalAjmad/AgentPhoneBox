@@ -250,7 +250,7 @@ impl MobileBoxServer {
     fn adb_shell(&self, Parameters(p): Parameters<ShellParams>) -> Result<String, rmcp::ErrorData> {
         // safety: block obviously destructive commands
         let lower = p.command.to_lowercase();
-        for bad in ["rm -rf", "reboot", "factory_reset", "wipe"] {
+        for bad in ["rm -rf", "reboot", "factory_reset", "wipe", "format", "dd if=", "mkfs", ":(){:|:&};:"] {
             if lower.contains(bad) {
                 return Err(rmcp::ErrorData::invalid_params(
                     format!("blocked potentially destructive command: {}", bad),
@@ -266,6 +266,10 @@ impl MobileBoxServer {
     fn restart_emulator(&self) -> Result<String, rmcp::ErrorData> {
         let adb = self.adb.lock().unwrap();
         let install_dir = adb.install_dir().to_path_buf();
+        let avd_home = std::env::var("ANDROID_AVD_HOME")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|_| install_dir.join(".android").join("avd"));
+        let avd_name = "mobilebox".to_string();
         let _ = adb.run(&["emu", "kill"]);
         drop(adb);
         // Relaunch in background
@@ -276,9 +280,8 @@ impl MobileBoxServer {
             } else {
                 install_dir.join("emulator").join("emulator")
             };
-            let avd_home = std::path::PathBuf::from("H:\\.android\\avd");
             let _ = std::process::Command::new(&emu)
-                .args(["-avd", "mobilebox", "-no-boot-anim", "-gpu", "swiftshader_indirect"])
+                .args(["-avd", &avd_name, "-no-boot-anim", "-gpu", "swiftshader_indirect"])
                 .env("ANDROID_AVD_HOME", &avd_home)
                 .env("ANDROID_SDK_ROOT", &install_dir)
                 .spawn();

@@ -1,7 +1,5 @@
 #![windows_subsystem = "windows"]
 
-#![windows_subsystem = "windows"]
-
 //! MobileBox launcher: tap the icon -> the virtual Android phone opens directly.
 
 use mobilebox_common::{MobileBoxConfig, emulator_path};
@@ -57,11 +55,11 @@ fn main() {
     let avd_home = std::env::var("ANDROID_AVD_HOME")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|_| {
-            let candidate = std::path::PathBuf::from("H:\\MobileBox\\.android\\avd");
+            // Portable: check relative to install dir first, then standard location.
+            let candidate = cfg.install_dir.join(".android").join("avd");
             if candidate.exists() {
                 candidate
             } else {
-                // standard location
                 #[cfg(target_os = "windows")]
                 {
                     std::env::var("USERPROFILE")
@@ -96,7 +94,7 @@ fn main() {
                 "google_apis_playstore",
                 "--force",
             ]);
-            c.env("JAVA_HOME", "H:\\jdk");
+            c.env("JAVA_HOME", cfg.install_dir.join("jdk"));
             c.env("ANDROID_AVD_HOME", &avd_home);
             let _ = c.output();
         }
@@ -118,9 +116,13 @@ fn main() {
             // Spawn hotkey listener (Ctrl+Alt+F -> fullscreen toggle).
             #[cfg(target_os = "windows")]
             {
-                let mut c = Command::new("powershell");
-                c.args(["-NoProfile", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File", "H:\\MobileBox\\MobileBox-Hotkey.ps1"]);
-                let _ = c.spawn();
+                let hotkey_script = cfg.install_dir.join("MobileBox-Hotkey.ps1");
+                if hotkey_script.exists() {
+                    let mut c = Command::new("powershell");
+                    c.args(["-NoProfile", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File"]);
+                    c.arg(&hotkey_script);
+                    let _ = c.spawn();
+                }
             }
             // Post-boot optimizations (background, delayed).
             #[cfg(target_os = "windows")]
@@ -128,7 +130,7 @@ fn main() {
                 let adb_path = cfg.install_dir.join("platform-tools").join("adb.exe");
                 let script = format!(
                     "Start-Sleep -Seconds 70; $adb='{}'; & $adb shell settings put global window_animation_scale 0; & $adb shell settings put global transition_animation_scale 0; & $adb shell settings put global animator_duration_scale 0; & $adb shell settings put secure navigation_mode 0; & $adb shell settings put secure location_mode 3; & $adb shell settings put secure location_providers_allowed +gps,+network",
-                    adb_path.to_string_lossy()
+                    adb_path.to_string_lossy().replace("'", "''")
                 );
                 let mut c = Command::new("powershell");
                 c.args(["-NoProfile", "-WindowStyle", "Hidden", "-Command", &script]);
@@ -141,9 +143,11 @@ fn main() {
 
 #[cfg(target_os = "windows")]
 fn show_message(msg: &str) {
+    // Escape single quotes for PowerShell by doubling them.
+    let escaped = msg.replace('\'', "''");
     let script = format!(
         "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('{}','MobileBox') | Out-Null",
-        msg.replace('\'', "''")
+        escaped
     );
     let _ = Command::new("powershell")
         .args(["-NoProfile", "-Command", &script])

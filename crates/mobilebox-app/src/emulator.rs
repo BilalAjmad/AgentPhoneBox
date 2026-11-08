@@ -12,6 +12,7 @@ pub fn start(cfg: &MobileBoxConfig) -> Result<(), MobileBoxError> {
         return Err(MobileBoxError::EmulatorNotFound(emu));
     }
     let skin_parent = cfg.install_dir.join("skins");
+    let skin_dir_str = skin_parent.to_string_lossy();
     let mut cmd = Command::new(&emu);
     cmd.args([
         "-avd",
@@ -19,7 +20,7 @@ pub fn start(cfg: &MobileBoxConfig) -> Result<(), MobileBoxError> {
         "-skin",
         "mobilebox_phone",
         "-skin-dir",
-        skin_parent.to_str().unwrap_or("."),
+        &skin_dir_str,
         "-no-snapshot-load",
         "-no-boot-anim",
     ]);

@@ -73,11 +73,12 @@ pub fn default_install_dir() -> PathBuf {
             }
         }
     }
-    // Dev fallback: H:\MobileBox
+    // Dev fallback: check relative to current working directory
     #[cfg(target_os = "windows")]
     {
-        if std::path::Path::new("H:\\MobileBox\\emulator\\emulator.exe").exists() {
-            return PathBuf::from("H:\\MobileBox");
+        let candidate = std::path::Path::new(".\\emulator\\emulator.exe");
+        if candidate.exists() {
+            return std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
         }
     }
     // Standard install location.

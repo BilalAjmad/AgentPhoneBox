@@ -63,3 +63,7 @@ render_video*.py
 # Distribution (binaries)
 dist/
 
+
+# Node lock file (regenerated)
+video/package-lock.json
+
